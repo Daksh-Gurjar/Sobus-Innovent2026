@@ -1,0 +1,19 @@
+{
+  "name": "sobus-innovent",
+  "version": "1.0.0",
+  "description": "Innovent 2026 — India's Biggest Idea Competition Website",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -l 3000",
+    "dev": "npx serve -l 3000"
+  },
+  "keywords": [
+    "innovent",
+    "idea-competition",
+    "startup",
+    "innovation"
+  ],
+  "author": "Sobus Center of Excellence",
+  "license": "MIT"
+}
+
