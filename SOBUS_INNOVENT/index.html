@@ -966,6 +966,33 @@
     <i class="fas fa-chevron-up" aria-hidden="true"></i>
   </button>
 
+  <!-- ═══════════════════════════════════════════════════
+       FINALISTS MODAL
+       ═══════════════════════════════════════════════════ -->
+  <div id="finalistsModal" class="finalists-modal" role="dialog" aria-modal="true" aria-labelledby="finalistsModalTitle">
+    <div class="finalists-modal__overlay"></div>
+    <div class="finalists-modal__container">
+      <button class="finalists-modal__close" aria-label="Close modal">✖</button>
+      <h2 id="finalistsModalTitle" class="finalists-modal__title">Innovent Finalists</h2>
+      <div class="finalists-modal__content">
+        <div id="finalistsLoading" class="finalists-modal__loading">
+          <div class="finalists-modal__spinner"></div>
+          <p>Loading finalists...</p>
+        </div>
+        <div id="finalistsError" class="finalists-modal__error" style="display: none;">
+          <i class="fas fa-exclamation-circle"></i>
+          <p>Failed to load finalists data. Please try again later.</p>
+        </div>
+        <div id="finalistsTableWrapper" class="finalists-modal__table-wrapper" style="display: none;">
+          <table id="finalistsTable" class="finalists-table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ SCRIPTS ═══════════════════════════════════ -->
   <script>
   'use strict';
@@ -1130,6 +1157,136 @@
   const stBtn = document.getElementById('scrollTop');
   window.addEventListener('scroll', () => stBtn.classList.toggle('visible', window.scrollY > 500), { passive: true });
   stBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ═══════════════════════════════════════════════════
+  // FINALISTS MODAL
+  // ═══════════════════════════════════════════════════
+  (function() {
+    const modal = document.getElementById('finalistsModal');
+    const closeBtn = modal.querySelector('.finalists-modal__close');
+    const overlay = modal.querySelector('.finalists-modal__overlay');
+    const loadingEl = document.getElementById('finalistsLoading');
+    const errorEl = document.getElementById('finalistsError');
+    const tableWrapper = document.getElementById('finalistsTableWrapper');
+    const table = document.getElementById('finalistsTable');
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRaTcq2xtLJcoTsEmqcDdB005_aTvLpZMx5bD-CUs92-aq4FMLPFuYzzoD2Pf6R5R1m2bBEYdJlrJ9c/pub?gid=0&single=true&output=csv';
+    const STORAGE_KEY = 'innovent_finalists_modal_shown';
+
+    // Check if modal has been shown before
+    const hasBeenShown = localStorage.getItem(STORAGE_KEY);
+
+    // Close modal function
+    function closeModal() {
+      modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+      // Mark as shown when user closes it
+      localStorage.setItem(STORAGE_KEY, 'true');
+    }
+
+    // Open modal function
+    function openModal() {
+      modal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Parse CSV data
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      return lines.map(line => {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          const nextChar = line[i + 1];
+
+          if (char === '"' && inQuotes && nextChar === '"') {
+            current += '"';
+            i++;
+          } else if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+        return values;
+      });
+    }
+
+    // Render table
+    function renderTable(data) {
+      if (!data || data.length === 0) {
+        showError();
+        return;
+      }
+
+      // First row is headers
+      const headers = data[0];
+      const rows = data.slice(1);
+
+      // Build table header
+      const thead = table.querySelector('thead');
+      thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+
+      // Build table body
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = rows.map(row =>
+        '<tr>' + row.map(cell => `<td>${cell}</td>`).join('') + '</tr>'
+      ).join('');
+
+      // Show table, hide loading
+      loadingEl.style.display = 'none';
+      tableWrapper.style.display = 'block';
+    }
+
+    // Show error
+    function showError() {
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'flex';
+    }
+
+    // Fetch CSV data
+    async function loadFinalists() {
+      try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) throw new Error('Failed to fetch');
+
+        const text = await response.text();
+        const data = parseCSV(text);
+        renderTable(data);
+      } catch (error) {
+        console.error('Error loading finalists:', error);
+        showError();
+      }
+    }
+
+    // Event listeners
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
+
+    // Auto-open modal on page load if not shown before
+    if (!hasBeenShown) {
+      // Wait for page to load, then show with slight delay for better UX
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          openModal();
+          loadFinalists();
+        }, 800);
+      });
+    }
+  })();
 
   </script>
 </body>
