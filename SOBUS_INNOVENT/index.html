@@ -1170,17 +1170,11 @@
     const tableWrapper = document.getElementById('finalistsTableWrapper');
     const table = document.getElementById('finalistsTable');
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRaTcq2xtLJcoTsEmqcDdB005_aTvLpZMx5bD-CUs92-aq4FMLPFuYzzoD2Pf6R5R1m2bBEYdJlrJ9c/pub?gid=0&single=true&output=csv';
-    const STORAGE_KEY = 'innovent_finalists_modal_shown';
-
-    // Check if modal has been shown before
-    const hasBeenShown = localStorage.getItem(STORAGE_KEY);
 
     // Close modal function
     function closeModal() {
       modal.classList.remove('is-open');
       document.body.style.overflow = '';
-      // Mark as shown when user closes it
-      localStorage.setItem(STORAGE_KEY, 'true');
     }
 
     // Open modal function
@@ -1276,16 +1270,14 @@
       }
     });
 
-    // Auto-open modal on page load if not shown before
-    if (!hasBeenShown) {
+    // Auto-open modal on page load
+    window.addEventListener('load', () => {
       // Wait for page to load, then show with slight delay for better UX
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          openModal();
-          loadFinalists();
-        }, 800);
-      });
-    }
+      setTimeout(() => {
+        openModal();
+        loadFinalists();
+      }, 800);
+    });
   })();
 
   </script>
