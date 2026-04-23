@@ -119,7 +119,7 @@ For detailed content editing instructions, see [`SOBUS_INNOVENT/README.md`](SOBU
 
 ## 🌐 Live Demo
 
-Visit the live website: [https://sobus-innovent2026.vercel.app](https://sobus-innovent2026.vercel.app)
+Visit the live website: [https://sobus-innovent2026.vercel.app](https://sobus-innovent2025-26.vercel.app)
 
 ---
 
